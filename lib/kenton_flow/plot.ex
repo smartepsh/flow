@@ -10,7 +10,7 @@ defmodule KentonFlow.Plot do
 
     IO.write(
       f,
-      "set terminal png font \"Arial,10\" size 700,500\nset output \"#{file_name}.png\"\nset title \"Elixir Flow processing progress over time\"\nset xlabel \"Time (ms)\"set ylabel \"Items processed\"set key top left\nset xrange [0:#{
+      "set terminal png font \"Arial,10\" size 700,500\nset output \"#{file_name}.png\"\nset title \"Elixir Flow processing progress over time\"\nset xlabel \"Time (ms)\"\nset ylabel \"Items processed\"\nset key top left\nset xrange [0:#{
         time_range
       }]\nplot #{set_plots(scopes)}"
     )
@@ -20,10 +20,11 @@ defmodule KentonFlow.Plot do
 
   defp gen_png(file_name) do
     System.cmd("gnuplot", ["#{file_name}.gp"])
+    :ok
   end
 
   defp set_plot_lines(scope, style) do
-    "\"#{scope}.log\"\t with lines ls #{style} title \"#{scope}\", \\ \n"
+    "\"#{scope}.log\"\t with lines ls #{style} title \"#{scope}\",\\\n"
   end
 
   defp set_plots(scopes) do
@@ -37,6 +38,6 @@ defmodule KentonFlow.Plot do
 
   defp get_time_range do
     {line, _} = System.cmd("tail", ["-n 1", "final.log"])
-    line |> String.split("\t") |> List.first() |> Kernel.+(500)
+    line |> String.split("\t") |> List.first() |> String.to_integer() |> Kernel.+(500)
   end
 end
