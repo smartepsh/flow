@@ -22,3 +22,6 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 kenton_flow-*.tar
 
+*.log
+*.png
+*.gp
