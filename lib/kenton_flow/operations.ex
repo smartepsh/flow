@@ -4,22 +4,26 @@ defmodule KentonFlow.Operations do
   # souce (delay, count, length)
   # scope (execute, final)
   def flow do
-    Sources.source(50, 200)
+    # |> Flow.group_by(& &1.num)
+    # |> Flow.partition(max_demand: 5)
+    Sources.source(10, 200)
     |> Flow.from_enumerable(max_demand: 50, stages: 2)
-    |> Flow.partition(max_demand: 5)
-    |> Flow.group_by(& &1.num)
-    |> Flow.partition(max_demand: 5)
-    |> Flow.reduce(fn -> [] end, fn {_, value}, acc ->
+    |> Flow.partition(
+      window: Flow.Window.global() |> Flow.Window.trigger_every(50),
+      stages: 2,
+      max_demand: 5
+    )
+    |> Flow.reduce(fn -> [] end, fn value, acc ->
       Server.incr(:execute)
       [value | acc]
     end)
-    |> Flow.partition(stages: 4, max_demand: 8)
-    |> Flow.each(&final/1)
+    |> Flow.partition(max_demand: 5)
+    |> Flow.map(&final/1)
     |> Flow.run()
   end
 
   def final(_item) do
-    Process.sleep(50)
+    Process.sleep(10)
     Server.incr(:final)
   end
 end
